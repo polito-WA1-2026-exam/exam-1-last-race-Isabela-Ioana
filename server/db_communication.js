@@ -12,7 +12,7 @@ function checkUserPassword(email, password){
         
         const query = "SELECT * FROM users where email = ?"
         
-        // FIX 1: Folosim 'rows' la plural în callback-ul db.all
+        
         db.all(query, [email], (err, rows) => {
             db.close()
             
