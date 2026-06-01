@@ -1,19 +1,22 @@
 import { useNavigate, Outlet } from "react-router";
 import { Navbar, Container, Button } from "react-bootstrap";
 import { TrainFront } from 'react-bootstrap-icons';
-import { useState } from "react";
+import Card from 'react-bootstrap/Card';
+import UserContext from '../Context/UserContext'
+import { useContext } from 'react'
 
 
-function HeaderAnonym() {
 
 
-    const navigate = useNavigate();
+function HeaderUser(props){
 
-    const [hideButton, setHideButton] = useState(false)
+    const user = useContext(UserContext)
 
-    function logButton(){
-        setHideButton(true)
-        navigate('/login');
+    //const navigate = useNavigate();
+
+    function rankingButton(){
+        //navigate('/ranking');
+        console.log('pressed')
     }
 
 
@@ -33,10 +36,14 @@ function HeaderAnonym() {
                 </Navbar.Brand> 
             
                 
-                <Button variant="light" onClick={logButton} hidden={hideButton} className="btn-sm px-4 fw-semibold rounded-pill text-dark opacity-90">
-                    Log In
+                <Button variant="light" onClick={rankingButton} className="btn-sm px-4 py-2 fw-semibold rounded-pill text-dark opacity-90 shadow-sm border-0">
+                    Ranking
                 </Button>
-                
+
+                <Card className="d-inline-flex align-items-center justify-content-center bg-light px-4 py-2 fw-semibold rounded-pill text-dark opacity-90 shadow-sm border-0"
+                style={{ fontSize: "0.875rem" }}>Welcome, {user.name} {user.surname}!</Card>
+
+
             </Container>
         </Navbar>
 
@@ -47,4 +54,4 @@ function HeaderAnonym() {
 }
 
 
-export default HeaderAnonym
+export default HeaderUser;

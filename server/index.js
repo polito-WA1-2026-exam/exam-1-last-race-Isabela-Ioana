@@ -4,6 +4,7 @@ import passport from 'passport';
 import LocalStrategy from 'passport-local';
 import session from 'express-session';
 import checkUserPassword from "./db_communication.js";
+import cors from "cors"
 
 // init express
 const app = new express();
@@ -11,7 +12,12 @@ const port = 3000;
 
 app.use(express.json())
 
-
+const corsOptions={             //server communicates with front end 
+  origin:'http://localhost:5173',
+  optinsSuccessState: 200,
+  credentials:true
+}
+app.use(cors(corsOptions))
 
 passport.use(new LocalStrategy(async function verify(username, password, cb) {
   const user = await checkUserPassword(username, password);
