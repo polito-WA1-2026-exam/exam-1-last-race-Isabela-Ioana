@@ -5,6 +5,7 @@ import LocalStrategy from 'passport-local';
 import session from 'express-session';
 import checkUserPassword from "./db_communication.js";
 import cors from "cors"
+import {Stations, myStations} from './DataModels/Stations.js'
 
 // init express
 const app = new express();
@@ -53,6 +54,9 @@ app.use(passport.authenticate("session"));
 
 // ROUTES
 
+
+const myStations1= new myStations()
+
 app.post("/api/sessions", passport.authenticate("local"), function(req, res) {
   return res.status(201).json(req.user);
 });
@@ -74,6 +78,18 @@ app.delete("/api/sessions/current", (req, res) => {
   });
 });
 
+
+//  GET /api/sessions/stations
+app.get("/api/stations",async (req,res)=>{
+    try{
+      const [stations,connections]= await Promise.all([myStations1.retrieveStations(),myStations1.retrieveConnections()])
+      res.json({stations,connections})
+    }
+    catch(err){
+      console.log(err)
+      res.status(500).json(err)
+    }
+})
 
 // activate the server
 app.listen(port, () => {

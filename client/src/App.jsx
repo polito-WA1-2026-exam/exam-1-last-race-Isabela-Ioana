@@ -10,6 +10,9 @@ import UserContext from './Context/UserContext';
 import {useNavigate, Outlet} from 'react-router';
 import LoginForm from './Components/LoginForm';
 import HeaderUser from './Components/HeaderUser';
+import Userpage from './Components/Userpage';
+import PlayPage from './Components/PlayPage';
+
 
 
 
@@ -34,6 +37,8 @@ function App() {
           </Route> 
 
           <Route path='/userpage' element= {<HeaderUser/>}>
+            <Route index element={<Userpage/>}/>
+            <Route path='playgame' element={<PlayPage/>} />
 
           </Route>
 
