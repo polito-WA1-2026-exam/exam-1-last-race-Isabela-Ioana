@@ -15,7 +15,7 @@ function Userpage() {
 
 
     return (
-        <div className="position-relative">
+        <div className="position-relative" style={{ backgroundColor: '#FFFFFC'}}>
             <Button 
                 variant="info" 
                 className="fw-bold position-absolute"

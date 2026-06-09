@@ -31,7 +31,6 @@ function myStations(){
                 return reject(err)
             }
             else{
-                console.log(rows)
                 resolve(rows)
             }
             
@@ -52,6 +51,8 @@ function myStations(){
         const query=`SELECT 
                 c.id,
                 c.line_id AS lineId,
+                c.id_start_station,
+                c.id_end_station,
                 l.color AS lineColor,
                 l.name AS lineName,
                 s1.x_coordinate AS x1,
@@ -70,8 +71,43 @@ function myStations(){
                 return reject(err)
             }
             else{
-                console.log(rows)
                 resolve(rows)
+            }
+            
+        })
+    })
+    }
+
+
+    this.retrieveBidirectionalConnections= function(){
+        return new Promise((resolve,reject)=>{
+            const db= new sqlite.Database("database.db",(err)=>{
+                if(err) return reject(err);
+        }
+        )
+    
+
+        const query = `SELECT s_start.name || ' - ' || s_end.name AS label
+        from connections c
+        join stations s_start on c.id_start_station = s_start.id
+        join stations s_end on c.id_end_station = s_end.id
+
+        UNION
+
+        select s_end.name || ' - ' || s_start.name AS label
+        from connections c
+        join stations s_start ON c.id_start_station = s_start.id
+        join stations s_end ON c.id_end_station = s_end.id`
+
+        db.all(query, (err,rows)=>{
+            db.close()
+            if(err){
+                console.log(err)
+                return reject(err)
+            }
+            else{
+                const segmentsList= rows.map(row=> row.label)
+                resolve(segmentsList)
             }
             
         })

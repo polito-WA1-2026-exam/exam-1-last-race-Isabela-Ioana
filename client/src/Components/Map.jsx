@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { Container, Card, Spinner, Alert, Button } from "react-bootstrap";
 import { Map as MapIcon } from "react-bootstrap-icons";
 
-function MetroMap() {
+function MetroMap(props) {
     const [mapData, setMapData] = useState({ stations: [], connections: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const showTitle = props && props.showTitle !== undefined? props.showTitle : true;
+    const showLines= props && props.showLines !== undefined? props.showLines : true;
 
     useEffect(() => {
         async function fetchMap() {
@@ -52,12 +55,16 @@ function MetroMap() {
     return (
         <Container className="mt-3 mb-4 text-white font-monospace" style={{ maxWidth: "800px" }}>
             
+            {showTitle &&
             <div className="d-flex justify-content-start align-items-center gap-2 mb-2 pb-2 border-bottom border-secondary border-opacity-25">
                 <MapIcon size={22} className="text-info" />
                 <h2 className="fs-4 text-black fw-bold m-0 text-uppercase">Bucharest Metro Map </h2>
             </div>
+            }
 
-            <Card className="p-4 border-0 text-center" style={{ backgroundColor: "#69abed" }}>
+
+
+            <Card className="p-4 border-0 text-center" style={{ backgroundColor: "#7a6f9b" }}>
                 <svg 
                     viewBox="260 50 340 280"
                     width="100%" 
@@ -78,7 +85,7 @@ function MetroMap() {
                     </defs>
 
 
-                    {mapData.connections.map((conn) => {
+                    {showLines && mapData.connections.map((conn) => {
 
                         if (conn.id === 20 || conn.id === 25) {
                             return null;
@@ -96,13 +103,14 @@ function MetroMap() {
                         );
                     })} 
 
+                    {showLines &&
                     <line 
                         x1="496" y1="259"  
                         x2="545" y2="260"  
                         stroke="url(#M1-M3-gradient)" 
                         strokeWidth="5"    
                         strokeLinecap="round"
-                    />
+                    />}
 
                     {mapData.stations.map((station) => { 
                         let textXOffset = 0;

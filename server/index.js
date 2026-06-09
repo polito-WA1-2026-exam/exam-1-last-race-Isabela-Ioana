@@ -3,7 +3,7 @@ import express from "express";
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
 import session from 'express-session';
-import checkUserPassword from "./db_communication.js";
+import {checkUserPassword,generateGameStations} from "./db_communication.js";
 import cors from "cors"
 import {Stations, myStations} from './DataModels/Stations.js'
 
@@ -15,10 +15,17 @@ app.use(express.json())
 
 const corsOptions={             //server communicates with front end 
   origin:'http://localhost:5173',
-  optinsSuccessState: 200,
+  optionsSuccessState: 200,
   credentials:true
 }
 app.use(cors(corsOptions))
+
+app.use(session({
+  secret: "ioana's secret",
+  resave: false,
+  saveUninitialized: false,
+}));
+app.use(passport.authenticate("session"));
 
 passport.use(new LocalStrategy(async function verify(username, password, cb) {
   const user = await checkUserPassword(username, password);
@@ -44,12 +51,6 @@ const isLoggedIn = (req, res, next) => {
   return res.status(401).json({error: "Not authorized"});
 }
 
-app.use(session({
-  secret: "ioana's secret",
-  resave: false,
-  saveUninitialized: false,
-}));
-app.use(passport.authenticate("session"));
 
 
 // ROUTES
@@ -89,6 +90,32 @@ app.get("/api/stations",async (req,res)=>{
       console.log(err)
       res.status(500).json(err)
     }
+})
+
+
+
+app.get("/api/game/start", async (req, res) => {
+    try {
+        const stations = await myStations1.retrieveStations();
+        const connections = await myStations1.retrieveConnections();
+
+        const gameSetup = generateGameStations(stations, connections);
+        
+        res.json(gameSetup); 
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
+app.get("/api/game/start/segments", async(req,res)=>{
+  try{
+    const segments= await myStations1.retrieveBidirectionalConnections()
+    res.json(segments)
+
+  }catch(err){
+        res.status(500).json(err);
+  }
+
 })
 
 // activate the server

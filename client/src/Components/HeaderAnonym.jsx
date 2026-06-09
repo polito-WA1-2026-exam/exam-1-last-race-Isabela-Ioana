@@ -21,7 +21,7 @@ function HeaderAnonym() {
         <>
         <Navbar sticky="top" className="py-2 border-bottom border-secondary border-opacity-10" 
                 style={{ 
-                    background: 'rgba(19, 145, 242, 0.8)',
+                    background: '#161925',
                     backdropFilter: 'blur(12px)',         
                     WebkitBackdropFilter: 'blur(12px)' 
                 }}>

@@ -182,3 +182,7 @@
     border-right-color: var(--border);
   }
 }
+
+.custom-game-font {
+    font-family: 'Inter', sans-serif !important;
+}
