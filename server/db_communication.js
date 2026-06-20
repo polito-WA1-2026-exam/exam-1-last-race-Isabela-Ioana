@@ -92,4 +92,88 @@ function generateGameStations(stations, connections) {
 }
 
 
-export {checkUserPassword,generateGameStations};
+
+function getRandomEvents(numb_events){
+  return new Promise((resolve, reject) => {
+    const db = new sqlite.Database("database.db", (err) => {
+            if (err) { return reject(err); }
+        })
+    
+    const query = `select id, description, effect 
+        from events 
+        order by RANDOM() 
+        limit ?`;
+
+        db.all(query, [numb_events], (err, rows) => {
+          db.close()
+          if (err)
+            reject({error: err})
+          else{
+            let events = {}
+            for(const row of rows){
+              events[row.id] = {description: row.description, effect: row.effect}
+            }
+            resolve(events)
+          }
+        })
+    
+    
+  })
+}
+
+
+function saveScoreInDB(userId, score, date) {
+    return new Promise((resolve, reject) => {
+        const db = new sqlite.Database("database.db", (err) => {
+            if (err) { return reject(err); }
+        })
+
+
+        const query = `
+            INSERT INTO games (user_id, score, played_at) 
+            VALUES (?, ?, ?) `;
+            
+        const params = [userId, score, date];
+        db.run(query, params, function (err) {
+
+            db.close()
+            
+            if (err) {
+                resolve({ error: err.message });
+            } else {
+                resolve({ success: true, id: this.lastID });
+            }
+        });
+    });
+}
+
+function getLeaderboardFromDB() {
+    return new Promise((resolve, reject) => {
+        const db = new sqlite.Database("database.db", (err) => {
+            if (err) { return reject(err); }
+        });
+
+        const query = `
+            SELECT 
+                games.user_id,
+                games.score,
+                games.played_at,
+                users.name || ' ' || users.surname AS username
+            FROM games
+            INNER JOIN users ON games.user_id = users.id
+            ORDER BY games.score DESC
+        `;
+
+        db.all(query, [], (err, rows) => {
+            db.close(); 
+            
+            if (err) {
+                resolve({ error: err.message });
+            } else {
+                resolve(rows); 
+            }
+        });
+    });
+}
+
+export {checkUserPassword,generateGameStations,getRandomEvents, saveScoreInDB, getLeaderboardFromDB};

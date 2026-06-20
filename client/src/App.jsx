@@ -12,7 +12,8 @@ import LoginForm from './Components/LoginForm';
 import HeaderUser from './Components/HeaderUser';
 import Userpage from './Components/Userpage';
 import PlayPage from './Components/PlayPage';
-
+import ScorePage from './Components/ScorePage';
+import RankingPage from './Components/RankingPage';
 
 
 
@@ -38,8 +39,12 @@ function App() {
 
           <Route path='/userpage' element= {<HeaderUser/>}>
             <Route index element={<Userpage/>}/>
-            <Route path='playgame' element={<PlayPage/>} />
-
+            <Route path='ranking' element={<RankingPage/>}/>
+            <Route path='playgame'>
+              <Route index element= {<PlayPage/>}/>
+              <Route path='score/:segmentLength' element={<ScorePage />} />
+            
+          </Route>
           </Route>
 
 

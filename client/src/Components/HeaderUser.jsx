@@ -12,11 +12,10 @@ function HeaderUser(props){
 
     const user = useContext(UserContext)
 
-    //const navigate = useNavigate();
+    const navigate = useNavigate();
 
     function rankingButton(){
-        //navigate('/ranking');
-        console.log('pressed')
+        navigate('/userpage/ranking');
     }
 
 

@@ -3,9 +3,12 @@ import express from "express";
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
 import session from 'express-session';
-import {checkUserPassword,generateGameStations} from "./db_communication.js";
+import {checkUserPassword,generateGameStations,getRandomEvents} from "./db_communication.js";
 import cors from "cors"
 import {Stations, myStations} from './DataModels/Stations.js'
+import { saveScoreInDB,getLeaderboardFromDB } from "./db_communication.js";
+
+
 
 // init express
 const app = new express();
@@ -117,6 +120,72 @@ app.get("/api/game/start/segments", async(req,res)=>{
   }
 
 })
+
+app.post('/api/events', async (req, res)=> {
+  try{
+    const nbOfEvenets = req.body.numberOfEvents
+    const result = await getRandomEvents(nbOfEvenets)
+
+    if (result.error){
+      return res.status(501).json({
+        message: "ERROR!",
+        error: result.error
+      })
+    }
+    else{
+      return res.json(result)
+    }
+  }
+  catch(err){
+       return res.status(501).json({
+        message: "ERROR!",
+        error: err
+      })
+  }
+})
+
+app.post('/api/ranking', async(req,res)=>{
+  try{
+    const {userId, score, date}= req.body
+    const result= await saveScoreInDB(userId, score, date)
+    if (result.error) {
+      return res.status(501).json({
+        message: "ERROR!",
+        error: result.error
+      })
+    } else {
+      return res.json(result)
+    }
+  }
+  catch(err){
+    res.status(500).json({
+      message: "ERROR!",
+      error: err.message
+    });
+  }
+})
+
+
+app.get('/api/ranking', async (req, res) => {
+  try {
+    const result = await getLeaderboardFromDB();
+
+    if (result.error) {
+      return res.status(501).json({
+        message: "ERROR!",
+        error: result.error
+      });
+    } else {
+      return res.json(result); 
+    }
+  } 
+  catch (err) {
+    return res.status(501).json({
+      message: "ERROR!",
+      error: err.message || err
+    });
+  }
+});
 
 // activate the server
 app.listen(port, () => {

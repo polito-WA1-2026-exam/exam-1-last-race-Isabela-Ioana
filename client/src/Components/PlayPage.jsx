@@ -3,8 +3,11 @@ import { Button, Container, Spinner, Card, Row, Col, ListGroup, Form } from "rea
 import MetroMap from "./Map";
 import { DatabaseGear } from "react-bootstrap-icons";
 import { Plus } from "react-bootstrap-icons";
+import { useNavigate, Outlet } from "react-router"
+
 
 function PlayPage() {
+    const navigate=useNavigate()
     const [gameStarted, setGameStarted] = useState(false);
     const [gameData, setGameData] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -52,45 +55,49 @@ function PlayPage() {
 
     function handleVerifyRoute() {
 
-        const startStationName = gameData?.startStation.name;
-        const endStationName = gameData?.endStation.name;
+        // const startStationName = gameData?.startStation.name;
+        // const endStationName = gameData?.endStation.name;
 
-        let orderedStations = [];
+        // let orderedStations = [];
 
-        for (let i = 0; i < chosenRoute.length; i++) {
-            const parts = chosenRoute[i].split(" - ").map(s => s.trim());
-            const segmentStart = parts[0];
-            const segmentEnd = parts[1];
+        // for (let i = 0; i < chosenRoute.length; i++) {
+        //     const parts = chosenRoute[i].split(" - ").map(s => s.trim());
+        //     const segmentStart = parts[0];
+        //     const segmentEnd = parts[1];
 
-            if (i === 0) {
-                if (segmentStart === startStationName) {
-                    orderedStations.push(segmentStart, segmentEnd);
-                }
-                else {
-                    setValidationResult(`The route must start at ${startStationName}!`);
-                    return;
-                }
-            } else {
-                const lastVisitedStation = orderedStations[orderedStations.length - 1];
+        //     if (i === 0) {
+        //         if (segmentStart === startStationName) {
+        //             orderedStations.push(segmentStart, segmentEnd);
+        //         }
+        //         else {
+        //             setValidationResult(`The route must start at ${startStationName}!`);
+        //             return;
+        //         }
+        //     } else {
+        //         const lastVisitedStation = orderedStations[orderedStations.length - 1];
 
-                if (segmentStart === lastVisitedStation) {
-                    orderedStations.push(segmentEnd);
-                } else if (segmentEnd === lastVisitedStation) {
-                    orderedStations.push(segmentStart);
-                } else {
-                    setValidationResult(`Disconnection found! Segment "${chosenRoute[i]}" does not connect to the previous station "${lastVisitedStation}".`);
-                    return;
-                }
-            }
-        }
+        //         if (segmentStart === lastVisitedStation) {
+        //             orderedStations.push(segmentEnd);
+        //         } else if (segmentEnd === lastVisitedStation) {
+        //             orderedStations.push(segmentStart);
+        //         } else {
+        //             setValidationResult(`Disconnection found! Segment "${chosenRoute[i]}" does not connect to the previous station "${lastVisitedStation}".`);
+        //             return;
+        //         }
+        //     }
+        // }
 
-        const finalStationReached = orderedStations[orderedStations.length - 1];
-        if (finalStationReached !== endStationName) {
-            setValidationResult(`The route is continuous but it ends at ${finalStationReached} instead of ${endStationName}.`);
-            return;
-        }
+        // const finalStationReached = orderedStations[orderedStations.length - 1];
+        // if (finalStationReached !== endStationName) {
+        //     setValidationResult(`The route is continuous but it ends at ${finalStationReached} instead of ${endStationName}.`);
+        //     return;
+        // }
 
-        setValidationResult('success');
+        // setValidationResult('success');
+
+        navigate(`/userpage/playgame/score/${chosenRoute.length}`,{
+            state: {segments: chosenRoute}
+        })
     }
 
     function getFilteredSegments() {
