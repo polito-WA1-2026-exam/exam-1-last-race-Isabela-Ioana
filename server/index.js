@@ -80,11 +80,11 @@ app.delete("/api/sessions/current", (req, res) => {
 });
 
 
-//  GET /api/sessions/stations
+//  GET /api/stations
 app.get("/api/stations", [isLoggedIn],async (req,res)=>{
     try{
       const [stations,connections]= await Promise.all([myStations1.retrieveStations(),myStations1.retrieveConnections()])
-      res.json({stations,connections})
+      res.status(200).json({stations,connections})
     }
     catch(err){
       console.log(err)
@@ -110,7 +110,7 @@ app.get("/api/game/start", [isLoggedIn], async (req, res) => {
 app.get("/api/game/start/segments", [isLoggedIn], async(req,res)=>{
   try{
     const segments= await myStations1.retrieveBidirectionalConnections()
-    res.json(segments)
+    res.status(200).json(segments)
 
   }catch(err){
         res.status(500).json(err);
