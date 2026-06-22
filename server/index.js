@@ -3,12 +3,9 @@ import express from "express";
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
 import session from 'express-session';
-import {checkUserPassword,generateGameStations,getRandomEvents} from "./db_communication.js";
-import cors from "cors"
-import {Stations, myStations} from './DataModels/Stations.js'
-import { saveScoreInDB,getLeaderboardFromDB } from "./db_communication.js";
-
-
+import cors from "cors";
+import { Stations, myStations } from './DataModels/Stations.js';
+import {checkUserPassword, generateGameStations, getRandomEvents, saveScoreInDB, getLeaderboardFromDB, verifyRouteLogic } from "./db_communication.js";
 
 // init express
 const app = new express();
@@ -84,7 +81,7 @@ app.delete("/api/sessions/current", (req, res) => {
 
 
 //  GET /api/sessions/stations
-app.get("/api/stations",async (req,res)=>{
+app.get("/api/stations", [isLoggedIn],async (req,res)=>{
     try{
       const [stations,connections]= await Promise.all([myStations1.retrieveStations(),myStations1.retrieveConnections()])
       res.json({stations,connections})
@@ -97,7 +94,7 @@ app.get("/api/stations",async (req,res)=>{
 
 
 
-app.get("/api/game/start", async (req, res) => {
+app.get("/api/game/start", [isLoggedIn], async (req, res) => {
     try {
         const stations = await myStations1.retrieveStations();
         const connections = await myStations1.retrieveConnections();
@@ -110,7 +107,7 @@ app.get("/api/game/start", async (req, res) => {
     }
 });
 
-app.get("/api/game/start/segments", async(req,res)=>{
+app.get("/api/game/start/segments", [isLoggedIn], async(req,res)=>{
   try{
     const segments= await myStations1.retrieveBidirectionalConnections()
     res.json(segments)
@@ -121,13 +118,13 @@ app.get("/api/game/start/segments", async(req,res)=>{
 
 })
 
-app.post('/api/events', async (req, res)=> {
+app.post('/api/events', [isLoggedIn], async (req, res)=> {
   try{
-    const nbOfEvenets = req.body.numberOfEvents
-    const result = await getRandomEvents(nbOfEvenets)
+    const nbOfEvents = req.body.numberOfEvents
+    const result = await getRandomEvents(nbOfEvents)
 
     if (result.error){
-      return res.status(501).json({
+      return res.status(500).json({
         message: "ERROR!",
         error: result.error
       })
@@ -137,19 +134,19 @@ app.post('/api/events', async (req, res)=> {
     }
   }
   catch(err){
-       return res.status(501).json({
+       return res.status(500).json({
         message: "ERROR!",
         error: err
       })
   }
 })
 
-app.post('/api/ranking', async(req,res)=>{
+app.post('/api/ranking', [isLoggedIn], async(req,res)=>{
   try{
     const {userId, score, date}= req.body
     const result= await saveScoreInDB(userId, score, date)
     if (result.error) {
-      return res.status(501).json({
+      return res.status(500).json({
         message: "ERROR!",
         error: result.error
       })
@@ -166,12 +163,12 @@ app.post('/api/ranking', async(req,res)=>{
 })
 
 
-app.get('/api/ranking', async (req, res) => {
+app.get('/api/ranking', [isLoggedIn], async (req, res) => {
   try {
     const result = await getLeaderboardFromDB();
 
     if (result.error) {
-      return res.status(501).json({
+      return res.status(500).json({
         message: "ERROR!",
         error: result.error
       });
@@ -180,11 +177,28 @@ app.get('/api/ranking', async (req, res) => {
     }
   } 
   catch (err) {
-    return res.status(501).json({
+    return res.status(500).json({
       message: "ERROR!",
       error: err.message || err
     });
   }
+});
+
+
+app.post('/api/game/verify', [isLoggedIn], (req, res) => {
+    try {
+        const { chosenRoute, startStation, endStation } = req.body;
+        
+        const result = verifyRouteLogic(chosenRoute, startStation, endStation);
+        
+        if (result.error) {
+            return res.json({ isValid: false, message: result.error });
+        } 
+        
+        return res.json({ isValid: true });
+    } catch (err) {
+        return res.status(500).json({ message: "Internal server error during validation", error: err.message });
+    }
 });
 
 // activate the server

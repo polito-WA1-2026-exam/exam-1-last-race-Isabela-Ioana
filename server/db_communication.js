@@ -154,14 +154,11 @@ function getLeaderboardFromDB() {
         });
 
         const query = `
-            SELECT 
-                games.user_id,
-                games.score,
-                games.played_at,
-                users.name || ' ' || users.surname AS username
-            FROM games
-            INNER JOIN users ON games.user_id = users.id
-            ORDER BY games.score DESC
+            SELECT u.id as userID, u.name as username, MAX(g.score) as score, g.played_at 
+            FROM games g
+            JOIN users u ON g.user_id = u.id
+            GROUP BY u.id, u.name
+            ORDER BY score DESC
         `;
 
         db.all(query, [], (err, rows) => {
@@ -176,4 +173,45 @@ function getLeaderboardFromDB() {
     });
 }
 
-export {checkUserPassword,generateGameStations,getRandomEvents, saveScoreInDB, getLeaderboardFromDB};
+function verifyRouteLogic(chosenRoute, startStationName, endStationName) {
+    if (!chosenRoute || chosenRoute.length === 0) {
+        return { error: "No segments added yet!" };
+    }
+
+    let orderedStations = [];
+
+    for (let i = 0; i < chosenRoute.length; i++) {
+        const parts = chosenRoute[i].split(" - ").map(s => s.trim());
+        const segmentStart = parts[0];
+        const segmentEnd = parts[1];
+
+        if (i === 0) {
+            if (segmentStart === startStationName) {
+                orderedStations.push(segmentStart, segmentEnd);
+            } else {
+                return { error: `The route must start at ${startStationName}!` };
+            }
+        } else {
+            const lastVisitedStation = orderedStations[orderedStations.length - 1];
+
+            if (segmentStart === lastVisitedStation) {
+                orderedStations.push(segmentEnd);
+            } else if (segmentEnd === lastVisitedStation) {
+                orderedStations.push(segmentStart);
+            } else {
+                return { error: `Disconnection found! Segment "${chosenRoute[i]}" does not connect to the previous station "${lastVisitedStation}".` };
+            }
+        }
+    }
+
+    const finalStationReached = orderedStations[orderedStations.length - 1];
+    if (finalStationReached !== endStationName) {
+        return { error: `The route is continuous but it ends at ${finalStationReached} instead of ${endStationName}.` };
+    }
+
+    return { success: true };
+}
+
+
+
+export {checkUserPassword,generateGameStations,getRandomEvents, saveScoreInDB, getLeaderboardFromDB, verifyRouteLogic};

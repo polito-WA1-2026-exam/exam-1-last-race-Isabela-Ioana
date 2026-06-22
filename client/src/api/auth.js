@@ -21,4 +21,15 @@ async function doLogin(email,password){
 
 }
 
-export {doLogin}
+
+async function doLogout() {
+    const response = await fetch('http://localhost:3000/api/sessions/current', {
+        method: 'DELETE'
+    });
+    if (!response.ok) {
+        throw new Error("Log out failed on server side.");
+    }
+}
+
+
+export {doLogin, doLogout}

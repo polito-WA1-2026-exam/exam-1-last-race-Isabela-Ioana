@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Container, Card, Spinner, Alert, Button } from "react-bootstrap";
-import { Map as MapIcon } from "react-bootstrap-icons";
 
 function MetroMap(props) {
     const [mapData, setMapData] = useState({ stations: [], connections: [] });
@@ -14,7 +13,7 @@ function MetroMap(props) {
         async function fetchMap() {
             try {
                 setLoading(true);
-                const response = await fetch("http://localhost:3000/api/stations");
+                const response = await fetch("http://localhost:3000/api/stations",{credentials:"include"});
                 
                 if (!response.ok) {
                     throw new Error("Couldn't fetch map data.");
@@ -57,7 +56,7 @@ function MetroMap(props) {
             
             {showTitle &&
             <div className="d-flex justify-content-start align-items-center gap-2 mb-2 pb-2 border-bottom border-secondary border-opacity-25">
-                <MapIcon size={22} className="text-info" />
+               
                 <h2 className="fs-4 text-black fw-bold m-0 text-uppercase">Bucharest Metro Map </h2>
             </div>
             }

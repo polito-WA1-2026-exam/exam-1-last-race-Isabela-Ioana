@@ -7,7 +7,7 @@ import UserContext from "../Context/UserContext";
 
 
 function ScorePage() {
-    const user= useContext(UserContext)
+    const user = useContext(UserContext)
     const { segmentLength } = useParams()
     const [randomEvents, setRandomEvents] = useState([])
     const [loading, setLoading] = useState(true)
@@ -15,22 +15,31 @@ function ScorePage() {
     const navigate = useNavigate();
     const [visibleCount, setVisibleCount] = useState(0);
     const [gameFinished, setGameFinished] = useState(false);
+
+    const isRouteInvalid = location.state?.isRouteInvalid || false;
+    const routeErrorMessage = location.state?.errorMessage || "";
+
     const finalRoute = location.state?.segments || [];
     const currentVisibleEvents = randomEvents.slice(0, visibleCount);
-    const liveScore = currentVisibleEvents.reduce((total, event) => total + (event.effect || 0), 20);
+
+
+    const calculatedScore = isRouteInvalid ? 0 : currentVisibleEvents.reduce((total, event) => total + (event.effect || 0), 20);
+    const liveScore = calculatedScore < 0 ? 0 : calculatedScore;
+
 
     async function saveScore() {
-      try{
-        const response = await fetch('http://localhost:3000/api/ranking', {
+        try {
+            const response = await fetch('http://localhost:3000/api/ranking', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    userId: user?.id,               
-                    score: liveScore, 
-                    date: new Date().toISOString()           
-                })
+                    userId: user?.id,
+                    score: liveScore,
+                    date: new Date().toISOString()
+                }),
+                credentials:"include"
             });
 
             if (!response.ok) {
@@ -39,14 +48,19 @@ function ScorePage() {
 
             setGameFinished(true);
             alert("Score successfully saved in the leaderboard!");
-        } catch(err){
+        } catch (err) {
             console.error(err);
             alert("Error saving score: " + err.message);
         }
-   
+
     }
 
     useEffect(() => {
+        if (isRouteInvalid) {
+            setLoading(false);
+            return;
+        }
+
         async function fetchEvents(numberOfEvents) {
             try {
                 const response = await fetch('http://localhost:3000/api/events', {
@@ -56,7 +70,8 @@ function ScorePage() {
                     },
                     body: JSON.stringify({
                         numberOfEvents: numberOfEvents
-                    })
+                    }),
+                    credentials:"include"
                 });
 
                 if (!response.ok) {
@@ -98,35 +113,41 @@ function ScorePage() {
         return () => clearTimeout(intervalId);
     }, [visibleCount, randomEvents, loading]);
 
-   
 
-    const isSimulationFinished = !loading && randomEvents.length > 0 && visibleCount === randomEvents.length;
+
+    const isSimulationFinished = !loading && (isRouteInvalid || (randomEvents.length > 0 && visibleCount === randomEvents.length));
+
+
+    if (loading) {
+        return (
+            <Container className="my-5 text-center font-monospace">
+                <Spinner animation="border" style={{ color: '#7a6f9b' }} />
+                <p className="text-muted mt-2">Simulating metro transit vectors...</p>
+            </Container>
+        );
+    }
 
 
     return (
         <Container className="my-5" style={{ maxWidth: "900px" }}>
-            <Card className="border-3 shadow-sm rounded-3 bg-white overflow-hidden mb-4" style={{ borderColor: '#161925' }}>
 
-                <div
-                    className="text-white p-3 fw-bold fs-5 d-flex justify-content-between align-items-center"
-                    style={{ backgroundColor: '#161925' }}
-                >
-                    <span>Your route</span>
+            {!loading && !isRouteInvalid && (
+                <Card className="border-3 shadow-sm rounded-3 bg-white overflow-hidden mb-4" style={{ borderColor: '#161925' }}>
 
-                    {!loading && randomEvents.length > 0 && (
-                        <span className="badge bg-warning text-dark fs-6 fw-bold">
-                            Live Score: {liveScore >= 0 ? `${liveScore}` : liveScore} pts
-                        </span>
-                    )}
-                </div>
+                    <div
+                        className="text-white p-3 fw-bold fs-5 d-flex justify-content-between align-items-center"
+                        style={{ backgroundColor: '#161925' }}
+                    >
+                        <span>Your route</span>
 
-                <Card.Body className="bg-white p-4">
-                    {loading ? (
-                        <div className="text-center my-4">
-                            <Spinner animation="border" variant="primary" />
-                            <p className="text-muted mt-2">Loading random events...</p>
-                        </div>
-                    ) : (
+                        {!loading && (
+                            <span className="badge bg-warning text-dark fs-6 fw-bold">
+                                Live Score: {liveScore} pts
+                            </span>
+                        )}
+                    </div>
+
+                    <Card.Body className="bg-white p-4">
                         <Row>
                             {currentVisibleEvents.map((event, idx) => {
                                 const positive = event.effect > 0;
@@ -154,24 +175,30 @@ function ScorePage() {
                                 );
                             })}
                         </Row>
-                    )}
-                </Card.Body>
-            </Card>
+                    </Card.Body>
+                </Card>
+            )}
 
             {isSimulationFinished && (
-                <Card className="border-3 shadow rounded-3 text-center p-4 mb-4" style={{ borderColor: '#198754' }}>
-                    <h2 className={`fw-bold mb-2 text-success`}>
+                <Card className="border-3 shadow rounded-3 text-center p-4 mb-4" style={{ borderColor: isRouteInvalid ? '#dc3545' : '#198754' }}>
+                    <h2 className={`fw-bold mb-2 ${isRouteInvalid ? 'text-danger' : 'text-success'}`}>
                         GAME OVER!
                     </h2>
 
                     <p className="fs-5 text-secondary mb-4">
                         The journey is over. Your total final score is <strong>{liveScore} points</strong>.
-                        <br />
                     </p>
+
+                    {isRouteInvalid && (
+                        <div className="alert alert-danger fw-medium small mt-3 p-2 text-center mx-auto" style={{ maxWidth: "500px" }}>
+                            <strong>Reason:</strong> {routeErrorMessage}
+                        </div>
+                    )}
+
 
                     {!gameFinished ? (
                         <Button
-                            variant="primary"
+                            variant={isRouteInvalid ? "danger" : "primary"}
                             className="fw-bold py-2 px-5 align-self-center"
                             onClick={saveScore}
                             style={{ maxWidth: "300px", fontSize: "1.1rem" }}

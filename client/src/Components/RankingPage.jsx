@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Container, Card, Table, Spinner } from "react-bootstrap";
+import { Container, Card, Table, Spinner, Button } from "react-bootstrap";
 import { CalendarEvent } from "react-bootstrap-icons";
+import {useNavigate} from "react-router"
 
 function RankingPage() {
     const [leaderboard, setLeaderboard] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate= useNavigate()
 
     useEffect(() => {
         async function fetchLeaderboard() {
@@ -13,7 +15,8 @@ function RankingPage() {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    credentials:"include"
                 });
 
                 if (!response.ok) {
@@ -34,7 +37,7 @@ function RankingPage() {
 
     return (
         <Container className="my-5" style={{ maxWidth: "800px" }}>
-            <Card className="border-3 shadow-sm rounded-3 bg-white overflow-hidden" style={{ borderColor: '#161925' }}>
+            <Card className="border-3 shadow-sm rounded-3 bg-white overflow-hidden mb-4" style={{ borderColor: '#161925' }}>
                 
                 <div className="text-white p-3 fw-bold fs-4" style={{ backgroundColor: '#161925' }}>
                     <span>Last Race Leaderboard</span>
@@ -69,7 +72,7 @@ function RankingPage() {
                                     });
 
                                     return (
-                                        <tr key={row.id}>
+                                        <tr key={idx}>
                                             <td className="fw-bold text-secondary">{rank}</td>
                                             <td>{row.username}</td>
                                             <td className="fw-bold text-dark">{row.score} points</td>
@@ -85,6 +88,16 @@ function RankingPage() {
                     )}
                 </Card.Body>
             </Card>
+            
+            <div className="text-center">
+                <Button
+                    onClick={() => navigate('/userpage/playgame')}
+                    className="px-4 py-2 fw-bold shadow-sm border-0 text-white shadow-none custom-mov-btn"
+                    style={{ backgroundColor: '#7a6f9b', minWidth: "200px" }}
+                >
+                    Start a game!
+                </Button>
+            </div>
         </Container>
     );
 }
